@@ -20,7 +20,7 @@ public class RoleServiceImpl implements RoleService {
     }
 
     @Override
-    public Set<Role> getRoleByName(List<String> roleName) {
+    public Set<Role> getRoleByName(List<Role> roleName) {
         return new HashSet<>(repository.findByNameIn(roleName));
     }
 }

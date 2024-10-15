@@ -1,13 +1,13 @@
 package ru.vovk.springboot.controller;
 
 import lombok.AllArgsConstructor;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.userdetails.UserDetails;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.ModelMap;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import ru.vovk.springboot.model.Role;
 import ru.vovk.springboot.model.User;
 import ru.vovk.springboot.service.RoleService;
@@ -16,45 +16,41 @@ import ru.vovk.springboot.service.UserService;
 import java.util.List;
 import java.util.Set;
 
-@Controller
+@RestController
 @AllArgsConstructor
+@RequestMapping("/api/admin")
 public class AdminController {
-    private static final String REDIRECT = "redirect:/admin-page";
     private UserService userService;
     private RoleService roleService;
 
-    @GetMapping("/admin-page")
-    public String getAllUsers(Authentication auth, ModelMap model) {
-        UserDetails userDetails = (UserDetails) auth.getPrincipal();
-        User user = userService.getUserByUsername(userDetails.getUsername()).orElseThrow();
-        List<Role> roles = roleService.getAllRoles();
-        List<User> users = userService.getAllUsers();
-        model.addAttribute("user", user);
-        model.addAttribute("users", users);
-        model.addAttribute("roles", roles);
-        model.addAttribute("newUser", new User());
-        return "admin-page";
+    @GetMapping("/users")
+    public ResponseEntity<List<User>> getAllUsers() {
+        List <User>user=userService.getAllUsers();
+        return new ResponseEntity<>(user, HttpStatus.OK);
     }
 
-    @PostMapping("/add-new-user")
-    public String addNewUserForm(User newUser) {
-        userService.saveUser(newUser);
-        return REDIRECT;
+    @PostMapping("/users")
+    public ResponseEntity <HttpStatus> saveUser(@RequestBody User user) {
+        userService.saveUser(user);
+        return new ResponseEntity<>(HttpStatus.CREATED);
+
     }
 
-    @PostMapping("/edit-form")
+    @PutMapping("/users")
     public String editUser(@RequestParam("id") Long id,
                            @RequestParam("username") String username,
                            @RequestParam("email") String email,
                            @RequestParam("password") String password,
-                           @RequestParam("roles") List<String> roleNames) {
+                           @RequestParam("roles") Set<Role> roleNames) {
         userService.updateUser(id, username, email, password, roleNames);
-        return REDIRECT;
+        return String.valueOf(new ResponseEntity<>( HttpStatus.OK));
     }
 
-    @PostMapping("/delete")
-    public String deleteUser(@RequestParam("id") Long id) {
+
+    @DeleteMapping("/users/{id}")
+
+    public ResponseEntity<HttpStatus> deleteUser (@PathVariable("id") long id) {
         userService.deleteUser(id);
-        return REDIRECT;
+        return new ResponseEntity<>(HttpStatus.NO_CONTENT);
     }
 }

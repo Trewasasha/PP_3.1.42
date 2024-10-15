@@ -60,15 +60,16 @@ public class UserServiceImpl implements UserService {
         return user;
     }
 
+
     @Override
     @Transactional
     public User updateUser(Long id,
                            String username,
                            String email,
                            String password,
-                           List<String> roleNames) {
+                           Set<Role> roleNames) {
         User maybeUser = getUserById(id).orElseThrow();
-        Set<Role> roles = roleRepository.findByNameIn(roleNames);
+        Set<Role> roles = roleRepository.findByNameIn((List<Role>) roleNames);
         maybeUser.setUsername(username);
         maybeUser.setPassword(passwordEncoder.encode(password));
         maybeUser.setEmail(email);
